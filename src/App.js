@@ -1,30 +1,34 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useContext } from 'react';
+import { TodoContext } from "./context/TodoContext";
 import './App.css';
 
 function App() {
-  const [todos, setTodos] = useState([]);
+  const { todos, dispatch } = useContext(TodoContext); 
   const [todoInput, setTodoInput] = useState('');
+  const [error, setError] = useState("");
   const inputRef = useRef(null);
 
   const addTodo = () => {
-    if (todoInput.trim() && !todos.some((t) => t.text === todoInput.trim())) {
-      setTodos([...todos, { id: Date.now(), text: todoInput, completed: false }]);
-      setTodoInput('');
-      inputRef.current.focus();
-    } else if (!todoInput.trim()) {
-      alert('Please write a task before adding!');
-    } else {
-      alert('This task already exists!');
-    }
-  };
+    if (todoInput.trim()) {
+      const exists = todos.some(todo => todo.text.toLowerCase() === todoInput.toLowerCase());
 
-  const toggleTodo = (id) => {
-    setTodos(todos.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
-  };
+      if (exists) {
+        setError("This Task already exists");
+        return;
+      }
+
+      dispatch({ type: "ADD", payload: { text: todoInput} });
+      inputRef.current.focus();
+      setTodoInput("");
+      setError("");
+  }
+};
+
+
 
   const deleteTodo = (id) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
-      setTodos(todos.filter((t) => t.id !== id));
+      dispatch({ type: "DELETE", payload: id });
     }
   };
 
@@ -50,6 +54,10 @@ function App() {
             ADD
           </button>
         </div>
+
+        {error && <p className="text-red-500 text-center">{error}</p>}
+
+
         <ul className="space-y-2">
           {todos.map((td) => (
             <li
@@ -59,7 +67,7 @@ function App() {
               <input
                 type="checkbox"
                 checked={td.completed}
-                onChange={() => toggleTodo(td.id)}
+                onChange={() =>  dispatch({ type: "TOGGLE", payload: td.id })}
                 className="mr-2 h-5 w-5 text-gray-600"
               />
               <span
