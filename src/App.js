@@ -3,9 +3,11 @@ import { TodoContext } from "./context/TodoContext";
 import './App.css';
 
 function App() {
-  const { todos, dispatch } = useContext(TodoContext); 
+  const { todos, dispatch, categories } = useContext(TodoContext); 
   const [todoInput, setTodoInput] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState("General");
   const [error, setError] = useState("");
+  const [filter, setFilter] = useState("All");
   const inputRef = useRef(null);
 
   const addTodo = () => {
@@ -17,7 +19,7 @@ function App() {
         return;
       }
 
-      dispatch({ type: "ADD", payload: { text: todoInput} });
+      dispatch({ type: "ADD", payload: { text: todoInput, category: selectedCategory} });
       inputRef.current.focus();
       setTodoInput("");
       setError("");
@@ -32,54 +34,79 @@ function App() {
     }
   };
 
+
+
+  const filteredTodos = filter === "All" ? todos : todos.filter(todo => todo.category === filter);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-gray-600 to-gray-400">
       <div className="bg-white shadow-xl rounded-3xl p-16">
         <h1 className="text-center text-3xl text-gray-900 font-bold mb-6">React Todo App 📝</h1>
-        <div className="mb-4 flex">
-          <input
-            id="todoinput"
-            type="text"
-            placeholder="Write your todo here"
-            value={todoInput}
-            onChange={(e) => setTodoInput(e.target.value)}
-            ref={inputRef}
-            className="border px-3 py-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
-          />
-          <button
-            id="todobtn"
-            onClick={addTodo}
-            className="bg-gray-500 px-4 py-2 text-white text-center rounded-r-lg hover:bg-gray-600"
-          >
-            ADD
-          </button>
-        </div>
+        <div className="mb-4 flex gap-2">
+      <input
+        id="todoinput"
+        type="text"
+        placeholder="Write your todo here"
+        value={todoInput}
+        onChange={(e) => setTodoInput(e.target.value)}
+        ref={inputRef}
+        className="border px-3 py-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
+      />
+
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+        className="border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
+        {categories.map((category) => (
+          <option key={category} value={category}>
+            {category}
+          </option>
+        ))}
+      </select>
+
+      <button
+        id="todobtn"
+        onClick={() => addTodo(todoInput, selectedCategory)}
+        className="bg-gray-500 px-4 py-2 text-white rounded-lg hover:bg-gray-600"
+      >
+        ADD
+      </button>
+    </div>
 
         {error && <p className="text-red-500 text-center">{error}</p>}
 
 
+        <div className="mb-4">
+          <label className="block text-gray-700">Filter by categories:</label>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="border px-3 py-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value="All">All</option>
+            {categories.map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+        </div>
+
+
         <ul className="space-y-2">
-          {todos.map((td) => (
-            <li
-              key={td.id}
-              className="flex items-center p-2 rounded-lg bg-slate-100 border border-gray-200"
-            >
+          {filteredTodos.map((todo) => (
+            <li key={todo.id} className="flex items-center p-2 rounded-lg bg-gray-100 border border-gray-200">
               <input
                 type="checkbox"
-                checked={td.completed}
-                onChange={() =>  dispatch({ type: "TOGGLE", payload: td.id })}
-                className="mr-2 h-5 w-5 text-gray-600"
+                checked={todo.completed}
+                onChange={() => dispatch({ type: "TOGGLE", payload: todo.id })}
+                className="mr-2 h-5 w-5 text-blue-600"
               />
-              <span
-                className={`flex-grow ${
-                  td.completed ? 'line-through text-gray-500' : 'text-gray-800'
-                }`}
-              >
-                {td.text}
+              <span className={`flex-grow ${todo.completed ? "line-through text-gray-500" : "text-gray-800"}`}>
+                {todo.text} <span className="text-sm text-gray-500">({todo.category})</span>
               </span>
               <button
-                className="ml-2 border-none bg-red-500 hover:bg-red-600 px-2 text-white rounded-lg"
-                onClick={() => deleteTodo(td.id)}
+                onClick={() => deleteTodo(todo.id)}
+                className="ml-2 bg-red-500 hover:bg-red-600 px-2 text-white rounded-lg"
               >
                 X
               </button>

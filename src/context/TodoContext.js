@@ -3,6 +3,8 @@ import { createContext, useEffect, useReducer } from "react";
 
 export const TodoContext = createContext();
 
+const categories = ["General", "Work", "Study", "Sport", "Shopping"];
+
 
 const loadTodosFromStorage = () => {
     const storedTodos = localStorage.getItem("todos");
@@ -16,7 +18,7 @@ const loadTodosFromStorage = () => {
     
     switch (action.type) {
       case "ADD":
-        updatedTodos = [...state, { id: Date.now(), text: action.payload.text, completed: false }];
+        updatedTodos = [...state, { id: Date.now(), text: action.payload.text, completed: false, category: action.payload.category }];
         localStorage.setItem("todos", JSON.stringify(updatedTodos));
         return updatedTodos;
   
@@ -44,7 +46,7 @@ const loadTodosFromStorage = () => {
     }, [todos]);
   
     return (
-      <TodoContext.Provider value={{ todos, dispatch }}>
+      <TodoContext.Provider value={{ todos, dispatch, categories }}>
         {children}
       </TodoContext.Provider>
     );
