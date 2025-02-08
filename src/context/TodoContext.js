@@ -31,6 +31,9 @@ const loadTodosFromStorage = () => {
         updatedTodos = state.map(todo => todo.id === action.payload ? { ...todo, completed: !todo.completed } : todo);
         localStorage.setItem("todos", JSON.stringify(updatedTodos));
         return updatedTodos;
+
+        case "REORDER":
+          return action.payload;        
   
       default:
         return state;
